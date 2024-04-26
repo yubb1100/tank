@@ -4,12 +4,10 @@ from gpiozero.pins.pigpio import PiGPIOFactory
 
 class ctrl:
     def __init__(self):
-        
-        
-        #self.sock2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        #self.sock2.bind((self.HOST, self.PORT))
-        #self.sock2.listen(10)
-        #self.conn, self.addr = self.sock2.accept()
+
+        self.f = open("config.ini", "w")
+        self.f.write("0\n0\n")
+        self.f.close()
 
         self.AI1 = LED(22)
         self.AI2 = LED(27)
@@ -85,7 +83,17 @@ class ctrl:
                 print('j')
                 self.servo.angle = 180
             elif "g q" in self.msg.decode():
+                self.f = open("config.ini", "r")
+                self.lines = self.f.readlines()
+                self.f.close()
+                
+                self.lines = [ self.lines[0], "1\n" ]
+                self.f = open("config.ini", "w")
+                self.f.writelines(self.lines)
+                self.f.close()
+                
                 print('q')
+
                 break
             else:
                 self.stay()

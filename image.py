@@ -26,7 +26,13 @@ class image:
         self.client_socket.connect(('142.232.234.244', 4003))
         self.connection = self.client_socket.makefile('wb')
 
+        self.f = open("config.ini", "r")
+
+        self.count = 0
+
     def __del__(self):
+        
+        self.f.close()
         self.client_socket.close()
 
     def run(self):
@@ -45,6 +51,15 @@ class image:
             print("{}: {}".format(self.img_counter, self.size))
             self.client_socket.sendall(struct.pack(">L", self.size) + self.data)
             self.img_counter += 1
+
+            self.count = self.count + 1
+
+            if self.count > 10000:
+                self.lines = self.f.readlines()
+                if lines[1] == "1\n":
+                    break
+                else:
+                    self.count = 0
 
 i1 = image()
 i1.run()
