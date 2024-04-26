@@ -1,0 +1,1 @@
+Run server.py on the PC to start the server, then run main.py on the pi to run the client
