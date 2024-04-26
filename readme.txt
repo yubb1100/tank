@@ -1,1 +1,11 @@
-Run server.py on the PC to start the server, then run main.py on the pi to run the client
+Files that need to be on the PC:
+server.py
+transmitter.py
+receiver.py
+
+Files that need to be on the Pi:
+main.py
+control.py
+image.py
+
+Run server.py on the PC to start the server, then run main.py on the pi to run the client. 
