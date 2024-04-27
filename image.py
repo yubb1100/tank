@@ -54,12 +54,11 @@ class image:
 
             self.count = self.count + 1
 
-            if self.count > 10000:
-                self.lines = self.f.readlines()
-                if lines[1] == "1\n":
-                    break
-                else:
-                    self.count = 0
+           # self.lines = self.f.readlines()
+           #     if lines[1] == "1\n":
+           #         break
+           #     else:
+           #         self.count = 0
 
 i1 = image()
 i1.run()

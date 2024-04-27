@@ -20,6 +20,9 @@ class receiver:
         self.payload_size = struct.calcsize(">L")
         print("payload_size: {}".format(self.payload_size))
 
+        self.flag = 0
+        self.count = 0
+
     def __del__(self):
         self.s.close()
         cv2.waitKey(0)
@@ -46,6 +49,7 @@ class receiver:
             cv2.imshow('ImageWindow',self.frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
+                
 
 
 r1 = receiver()
