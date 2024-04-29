@@ -2,6 +2,10 @@ import socket
 from gpiozero import LED, AngularServo
 from gpiozero.pins.pigpio import PiGPIOFactory
 
+import time
+from adafruit_motorkit import MotorKit
+from adafruit_servokit import ServoKit
+
 class ctrl:
     def __init__(self):
 
@@ -9,17 +13,14 @@ class ctrl:
         self.f.write("0\n0\n")
         self.f.close()
 
-        self.AI1 = LED(22)
-        self.AI2 = LED(27)
-        self.BI1 = LED(5)
-        self.BI2 = LED(6)
-        self.PWMA = LED(17)
-        self.PWMA.on()
-        self.PWMB = LED(26)
-        self.PWMB.on()
-        self.factory = PiGPIOFactory()
-        self.servo = AngularServo(18, min_angle=0, max_angle=180, pin_factory=self.factory, min_pulse_width = 0.5 / 1000, max_pulse_width = 2.5 / 1000)
-        self.servo.angle = 90
+        self.kit = MotorKit()
+        self.kit.motor1.throttle = 0
+        self.kit.motor2.throttle = 0
+        self.kit.motor3.throttle = 0
+
+        self.skit = ServoKit(channels=16)
+        self.skit.servo[0].angle = 90
+        self.skit.servo[1].angle = 90
 
         self.sock2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock2.connect(('142.232.234.244', 5003))
@@ -29,59 +30,55 @@ class ctrl:
         self.sock2.close()
         
     def forward(self):
-        self.AI1.on()
-        self.AI2.off()
-        self.BI1.on()
-        self.BI2.off()
+        self.kit.motor1.throttle = 1
+        self.kit.motor2.throttle = 1
 
     def backward(self):
-        self.AI1.off()
-        self.AI2.on()
-        self.BI1.off()
-        self.BI2.on()
+        self.kit.motor1.throttle = -1
+        self.kit.motor2.throttle = -1
 
     def left(self):
-        self.AI1.off()
-        self.AI2.on()
-        self.BI1.on()
-        self.BI2.off()
+        self.kit.motor1.throttle = -1
+        self.kit.motor2.throttle = 1
 
     def right(self):
-        self.AI1.on()
-        self.AI2.off()
-        self.BI1.off()
-        self.BI2.on()
+        self.kit.motor1.throttle = 1
+        self.kit.motor2.throttle = -1
 
     def stay(self):
-        self.AI1.on()
-        self.AI2.on()
-        self.BI1.on()
-        self.BI2.on()
-
+        self.kit.motor1.throttle = 0
+        self.kit.motor2.throttle = 0
+        self.kit.motor3.throttle = 0
+        
+    def shoot(self):
+        self.kit.motor3.throttle = 1
 
     def run(self):
         while True:
             self.msg = self.sock2.recv(2048)
             if self.msg is not None:
-                print(self.msg.decode())
+                pass
+                #print(self.msg.decode())
             if "g s" in self.msg.decode():
-                print('s')
                 self.backward()
+                #print('s')
             elif "g w" in self.msg.decode():
-                print('w')
                 self.forward()
+                #print('w')
             elif "g a" in self.msg.decode():
-                print('a')
+                #print('a')
                 self.left()
             elif "g d" in self.msg.decode():
-                print('d')
+                #print('d')
                 self.right()
             elif "g l" in self.msg.decode():
-                print('l')
-                self.servo.angle = 0
+                #print('l')
+                self.skit.servo[0].angle = 0
             elif "g j" in self.msg.decode():
-                print('j')
-                self.servo.angle = 180
+                #print('j')
+                self.skit.servo[0].angle = 180
+            elif "g p" in self.msg.decode():
+                self.shoot()
             elif "g q" in self.msg.decode():
                 self.f = open("config.ini", "r")
                 self.lines = self.f.readlines()
@@ -92,12 +89,12 @@ class ctrl:
                 self.f.writelines(self.lines)
                 self.f.close()
                 
-                print('q')
+                #print('q')
 
                 break
             else:
                 self.stay()
-                self.servo.angle = 90
+                #self.servo.angle = 90
 
 control = ctrl()
 control.run()
