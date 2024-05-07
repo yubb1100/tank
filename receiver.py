@@ -7,7 +7,7 @@ import struct ## new
 
 class receiver:
     def __init__(self):
-        self.HOST='142.232.234.244'
+        self.HOST='142.232.234.243'
         self.PORT=4003
     
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

@@ -1,4 +1,4 @@
-#from picamera2 import Picamera2
+from picamera2 import Picamera2
 import numpy as np
 import cv2
 import io
@@ -12,16 +12,14 @@ import subprocess
 
 import sys
 
+from multiprocessing.connection import Listener
+
 class image:
     def __init__(self):
         print(cv2.aruco.DICT_6X6_250)
-        self.cap =cv2.VideoCapture('udpsrc port=5200 caps = "application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264, payload=(int)96" ! rtph264depay ! decodebin ! videoconvert ! appsink', cv2.CAP_GSTREAMER)
-
-        if self.cap.isOpened() is not True:
-            print("Cannot open camera")
-        #self.picam2 = Picamera2()
-        #self.picam2.configure(self.picam2.create_preview_configuration(main={"format": 'XRGB8888', "size": (640,480)}))
-        #self.picam2.start()
+        self.picam2 = Picamera2()
+        self.picam2.configure(self.picam2.create_preview_configuration(main={"format": 'XRGB8888', "size": (640,480)}))
+        self.picam2.start()
         self.encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 90]
         self.aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_250)
         self.parameters = cv2.aruco.DetectorParameters_create()
@@ -29,7 +27,7 @@ class image:
         self.img_counter = 0
 
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.client_socket.connect(('142.232.234.244', 4003))
+        self.client_socket.connect(('142.232.234.243', 4003))
         self.connection = self.client_socket.makefile('wb')
 
         #self.f = open("config.ini", "r")
@@ -37,6 +35,10 @@ class image:
         self.count = 0
         self.face_classifier = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
+        #self.address = ('localhost', 6000)
+        #self.listener = Listener(self.address, authkey=b'secret password')
+        #self.conn = self.listener.accept()
+        #print('connection accepted from', self.listener.last_accepted)
 
     def __del__(self):
         
@@ -45,8 +47,7 @@ class image:
 
     def run(self):
         while True:
-            self.im = self.cap.read()
-#self.im = self.picam2.capture_array()
+            self.im = self.picam2.capture_array()
             self.im = cv2.cvtColor(self.im, cv2.COLOR_BGR2GRAY)
             self.corners, self.ids, self.rejected = cv2.aruco.detectMarkers(self.im, self.aruco_dict, parameters=self.parameters)
             if self.ids is not None:
@@ -67,7 +68,10 @@ class image:
             self.img_counter += 1
 
             self.count = self.count + 1
-
+            #self.msg = self.conn.recv()
+            #if self.msg == 'close':
+            #    self.conn.close()
+            #    break
            # self.lines = self.f.readlines()
            #     if lines[1] == "1\n":
            #         break
