@@ -1,19 +1,26 @@
-from multiprocessing import Process
+from multiprocessing import Process, Pipe
 
-import subprocess
+import receiver
+import transmitter
 
-def run_script(script_name):
-    subprocess.run(["python", script_name])
+def tx(pipe):
+    t = transmitter.transmitter()
+    t.run(pipe)
+def rx(pipe):
+    r = receiver.receiver()
+    r.run(pipe)
     
 def main():
-    script1_thread = Process(target=run_script, args=("receiver.py",))
-    script2_thread = Process(target=run_script, args=("transmitter.py",))
+    parent_conn, child_conn = Pipe()
+    
+    tx_process = Process(target=tx, args=(child_conn,))
+    rx_process = Process(target=rx, args=(parent_conn,))
 
-    script1_thread.start()
-    script2_thread.start()
+    tx_process.start()
+    rx_process.start()
 
-    script1_thread.join()
-    script2_thread.join()
+    tx_process.join()
+    rx_process.join()
 
     print("Both scripts have finished executing.")
 

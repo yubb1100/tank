@@ -12,14 +12,22 @@ import pickle
 import struct
 
 import math
+import random
+import board
+import neopixel
 
 class ctrl:
     def __init__(self):
-
+        self.pixels = neopixel.NeoPixel(board.D18,48)
+        #self.pixels[0] = (255,0,0)
         self.f = open("config.ini", "w")
         self.f.write("0\n0\n")
         self.f.close()
-
+        self.colors = [(0, 0 * 102, 0 * 34),   # Green
+          (0, 0 * 255, 0 * 127),  # Light green
+          (0 * 255, 0 * 51, 0 * 102), # Pink
+          (0 * 255, 0 * 204, 0 * 255),# Light pink
+          (0 * 255, 0, 0 * 77)]   # Red
         self.kit = MotorKit()
         self.kit.motor1.throttle = 0
         self.kit.motor2.throttle = 0
@@ -44,16 +52,10 @@ class ctrl:
         self.sock2.close()
         
     def go(self, x, y):
-        if (-0.3 <= x <= 0.3 and not -0.3 <= y <= 0.3):
+        if (-0.2 <= x <= 0.2 and not -0.2 <= y <= 0.2):
             self.kit.motor1.throttle = -y
             self.kit.motor2.throttle = -y
-        elif (-0.3 <= y <= 0.3 and not -0.3 <= x <= 0.3):
-            self.kit.motor1.throttle = x
-            self.kit.motor2.throttle = -x
-        elif -0.3 > x:
-            self.kit.motor1.throttle = x
-            self.kit.motor2.throttle = -x
-        elif 0.3 < x:
+        elif (not -0.2 <= x <= 0.2 and -0.2 <= y <= 0.2):
             self.kit.motor1.throttle = x
             self.kit.motor2.throttle = -x
         else:
@@ -104,7 +106,7 @@ class ctrl:
             self.frame=pickle.loads(self.frame_data, fix_imports=True, encoding="bytes")
 
             #self.msg = self.sock2.recv(4096)
-            print(self.frame)
+            #print(self.frame)
 
             if (~(-0.3 <= self.frame[3] <= 0.3) and ~(-0.3 <= self.frame[4] <= 0.3)):
                 self.position(self.frame[4], self.frame[3])
@@ -120,5 +122,14 @@ class ctrl:
                 self.gunstay2()
             self.go(self.frame[0], self.frame[1])
 
+            if self.current - self.point > random.uniform(0.05, 0.1):
+                for i in range(48):
+                    self.flicker = random.randint(0, 50)  # Intensity of flicker
+                    self.color_index = random.randint(0, len(self.colors) - 1)
+                    self.color = self.colors[self.color_index]
+                    self.flicker_color = (max(0, self.color[0] - self.flicker), max(0, self.color[1] - self.flicker), max(0, self.color[2] - self.flicker))
+                    self.pixels[i] = self.flicker_color
+                    self.pixels.show()
+                self.point = time.time()
 control = ctrl()
 control.run()

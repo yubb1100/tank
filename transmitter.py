@@ -5,6 +5,7 @@ import pygame
 import os
 import pickle
 import struct
+from multiprocessing import Pipe
 
 class transmitter:
     def __init__(self):
@@ -71,16 +72,21 @@ class transmitter:
             self.conn.sendall(str.encode("g p"))
             self.current = time.time()
 
-    def run(self):
+    def run(self, pipe):
         while True:
+            self.msg = pipe.recv()
             pygame.event.pump()
-            if (self.current - self.point) > 0.02:
+            if (self.current - self.point) > 0.06:
                 self.x_l = self.joystick.get_axis(0)
                 self.y_l = self.joystick.get_axis(1)
                 self.x_r = self.joystick.get_axis(2)
                 self.y_r = self.joystick.get_axis(3)
                 self.t_l = self.joystick.get_axis(4)
                 self.t_r = self.joystick.get_axis(5)
+                if self.msg[0] == 'p' and self.msg[1] == 'e' and self.msg[2] == 'w':
+                    print(self.msg)
+                    self.x_r = 1
+                    self.t_r = 1
                 self.dict = [
                     self.x_l,
                     self.y_l,
@@ -98,8 +104,14 @@ class transmitter:
                 self.conn.sendall(struct.pack(">L", self.size) + self.data)
             #self.conn.send(self.msg)
             self.current = time.time()
+            #self.pmsg = pipe.recv()
+            #if self.pmsg == "quit":
+            #    print(self.pmsg)
+            #    break
+            #else:
+            #    print(self.pmsg)
             #print(self.msg)
             #if keyboard.is_pressed('q'):
             #    break
-t1 = transmitter()
-t1.run()
+#t1 = transmitter()
+#t1.run()
